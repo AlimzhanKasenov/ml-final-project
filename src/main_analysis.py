@@ -40,7 +40,7 @@ def get_project_root() -> str:
 
 def create_project_directories(project_root: str) -> dict:
     """
-    Создаёт нужные папки проекта.
+    Создаёт папки для графиков, моделей и отчётов.
     """
 
     paths = {
@@ -58,7 +58,7 @@ def create_project_directories(project_root: str) -> dict:
 
 def save_plot(path: str) -> None:
     """
-    Сохраняет график в файл и закрывает его.
+    Сохраняет текущий график и закрывает его.
     """
 
     plt.tight_layout()
@@ -74,11 +74,10 @@ def load_dataset(data_path: str) -> pd.DataFrame:
     if not os.path.exists(data_path):
         raise FileNotFoundError(
             f"Файл датасета не найден: {data_path}\n"
-            f"Сначала запустите файл src/generate_dataset.py"
+            "Сначала запустите src/generate_dataset.py"
         )
 
-    df = pd.read_csv(data_path)
-    return df
+    return pd.read_csv(data_path)
 
 
 def print_dataset_info(df: pd.DataFrame) -> None:
@@ -188,10 +187,9 @@ def prepare_data(df: pd.DataFrame):
 
     processed_df = df.copy()
 
-    # Удаляем технический ID, потому что он не несёт полезной информации для модели.
+    # ID клиента не используется в обучении, так как это технический идентификатор.
     processed_df = processed_df.drop(columns=["ID_клиента"])
 
-    # Кодируем текстовые признаки в числовые через one-hot encoding.
     categorical_columns = [
         "Пол",
         "Город",
@@ -200,6 +198,7 @@ def prepare_data(df: pd.DataFrame):
         "Канал_обслуживания"
     ]
 
+    # Категориальные признаки преобразуются в числовой вид через one-hot encoding.
     processed_df = pd.get_dummies(
         processed_df,
         columns=categorical_columns,
@@ -218,7 +217,6 @@ def prepare_data(df: pd.DataFrame):
     )
 
     scaler = StandardScaler()
-
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
@@ -232,14 +230,11 @@ def prepare_data(df: pd.DataFrame):
 
 def find_best_threshold(y_test, y_proba) -> dict:
     """
-    Подбирает лучший порог классификации по метрике F1.
-
-    По умолчанию классификация обычно идёт по порогу 0.5.
-    Но для задачи оттока клиентов часто выгоднее снизить порог,
-    чтобы лучше находить клиентов с риском ухода.
+    Подбирает порог классификации, при котором F1-score максимален.
     """
 
     thresholds = [i / 100 for i in range(10, 91)]
+
     best_result = {
         "threshold": 0.5,
         "f1": 0,
@@ -251,7 +246,7 @@ def find_best_threshold(y_test, y_proba) -> dict:
     for threshold in thresholds:
         y_pred = (y_proba >= threshold).astype(int)
 
-        current_f1 = f1_score(y_test, y_pred)
+        current_f1 = f1_score(y_test, y_pred, zero_division=0)
         current_precision = precision_score(y_test, y_pred, zero_division=0)
         current_recall = recall_score(y_test, y_pred, zero_division=0)
         current_accuracy = accuracy_score(y_test, y_pred)
@@ -270,11 +265,7 @@ def find_best_threshold(y_test, y_proba) -> dict:
 
 def evaluate_model(model, X_test, y_test, model_name: str) -> dict:
     """
-    Оценивает модель по основным метрикам классификации.
-
-    Считаем два варианта:
-    1. стандартный порог 0.5;
-    2. оптимальный порог, подобранный по F1.
+    Оценивает модель при стандартном пороге 0.5 и при подобранном пороге.
     """
 
     y_proba = model.predict_proba(X_test)[:, 1]
@@ -346,7 +337,7 @@ def train_models(
     models_dir: str
 ) -> tuple:
     """
-    Обучает модели и сохраняет их в папку models.
+    Обучает модели машинного обучения и сохраняет их в папку models.
     """
 
     print("\n" + "=" * 80)
@@ -530,7 +521,7 @@ def create_model_comparison_plots(results_df: pd.DataFrame, images_dir: str) -> 
 
 def create_feature_importance_plot(model, feature_names, images_dir: str) -> pd.DataFrame:
     """
-    Создаёт график важности признаков для Random Forest.
+    Создаёт график важности признаков для RandomForestClassifier.
     """
 
     print("\n" + "=" * 80)
@@ -579,7 +570,7 @@ def save_results(results_df: pd.DataFrame, feature_importances: pd.DataFrame, re
 
 def print_final_conclusion(results_df: pd.DataFrame) -> None:
     """
-    Выводит итоговый вывод.
+    Выводит итоговый вывод по результатам обучения моделей.
     """
 
     best_model_by_roc_auc = results_df.sort_values(by="ROC_AUC", ascending=False).iloc[0]
@@ -605,21 +596,16 @@ def print_final_conclusion(results_df: pd.DataFrame) -> None:
 В рамках проекта была решена задача прогнозирования оттока клиентов банка.
 
 Для анализа использовался синтетический датасет на русском языке, содержащий информацию о 10 000 клиентах банков.
-В датасет входят демографические, поведенческие и финансовые признаки клиентов:
-возраст, город, банк, тип клиента, канал обслуживания, кредитный рейтинг, баланс,
-количество продуктов, активность клиента, жалобы, обращения в поддержку и другие параметры.
 
 Были обучены и сравнены следующие модели:
 1. Logistic Regression — базовая модель.
 2. BaggingClassifier — ансамблевый метод на основе бэггинга.
 3. RandomForestClassifier — случайный лес.
 4. GradientBoostingClassifier — градиентный бустинг.
-5. LightGBMClassifier — современная реализация градиентного бустинга.
+5. LightGBMClassifier — модель на основе градиентного бустинга.
 
-Для оценки моделей использовались метрики Accuracy, Precision, Recall, F1-score и ROC-AUC.
-Дополнительно был выполнен подбор оптимального порога классификации по метрике F1-score.
-Это важно для задачи оттока клиентов, так как класс ушедших клиентов встречается реже,
-и стандартный порог 0.5 не всегда позволяет хорошо находить клиентов с риском ухода.
+Для оценки моделей использовались Accuracy, Precision, Recall, F1-score и ROC-AUC.
+Дополнительно был выполнен подбор оптимального порога классификации по F1-score.
 
 Лучшая модель по ROC-AUC:
 {best_model_by_roc_auc["Модель"]}
@@ -644,17 +630,13 @@ Recall:
 
 F1-score ансамблевой модели:
 {best_ensemble_by_f1["F1_лучший_порог"]:.4f}
-
-Ансамблевые методы показали хорошее качество, потому что они способны выявлять нелинейные зависимости между признаками.
-Наиболее важными факторами оттока обычно являются количество жалоб, обращения в поддержку,
-активность клиента, срок обслуживания, количество банковских продуктов и использование мобильного приложения.
 """
     )
 
 
 def main() -> None:
     """
-    Главная функция запуска проекта.
+    Запускает полный процесс анализа данных и обучения моделей.
     """
 
     project_root = get_project_root()

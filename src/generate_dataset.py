@@ -6,156 +6,145 @@ import pandas as pd
 
 def generate_bank_churn_dataset(rows_count: int = 10000, random_state: int = 42) -> pd.DataFrame:
     """
-    Генерирует синтетический датасет клиентов банков для задачи прогнозирования оттока.
-
-    Датасет содержит 10 000 строк и имитирует клиентскую базу банков.
-    Все названия колонок и категориальные значения указаны на русском языке.
+    Создаёт синтетический датасет клиентов банков для задачи прогнозирования оттока.
     """
 
     np.random.seed(random_state)
 
-    id_клиента = np.arange(1, rows_count + 1)
+    customer_id = np.arange(1, rows_count + 1)
 
-    возраст = np.random.normal(loc=42, scale=12, size=rows_count).astype(int)
-    возраст = np.clip(возраст, 18, 75)
+    age = np.random.normal(loc=42, scale=12, size=rows_count).astype(int)
+    age = np.clip(age, 18, 75)
 
-    пол = np.random.choice(
+    gender = np.random.choice(
         ["Мужчина", "Женщина"],
         size=rows_count,
         p=[0.48, 0.52]
     )
 
-    город = np.random.choice(
+    city = np.random.choice(
         ["Алматы", "Астана", "Шымкент", "Караганда", "Актобе", "Павлодар"],
         size=rows_count,
         p=[0.32, 0.25, 0.15, 0.10, 0.10, 0.08]
     )
 
-    банк = np.random.choice(
+    bank = np.random.choice(
         ["Kaspi Bank", "Halyk Bank", "ForteBank", "Jusan Bank", "Bereke Bank"],
         size=rows_count,
         p=[0.30, 0.28, 0.17, 0.15, 0.10]
     )
 
-    тип_клиента = np.random.choice(
+    client_type = np.random.choice(
         ["Новый", "Обычный", "Премиальный"],
         size=rows_count,
         p=[0.25, 0.60, 0.15]
     )
 
-    канал_обслуживания = np.random.choice(
+    service_channel = np.random.choice(
         ["Мобильное приложение", "Отделение", "Колл-центр", "Интернет-банк"],
         size=rows_count,
         p=[0.50, 0.20, 0.15, 0.15]
     )
 
-    кредитный_рейтинг = np.random.normal(loc=650, scale=90, size=rows_count).astype(int)
-    кредитный_рейтинг = np.clip(кредитный_рейтинг, 300, 850)
+    credit_score = np.random.normal(loc=650, scale=90, size=rows_count).astype(int)
+    credit_score = np.clip(credit_score, 300, 850)
 
-    срок_обслуживания_лет = np.random.randint(0, 11, size=rows_count)
+    tenure_years = np.random.randint(0, 11, size=rows_count)
 
-    баланс = np.random.normal(loc=120000, scale=65000, size=rows_count)
-    баланс = np.clip(баланс, 0, 350000).round(2)
+    balance = np.random.normal(loc=120000, scale=65000, size=rows_count)
+    balance = np.clip(balance, 0, 350000).round(2)
 
-    количество_продуктов = np.random.choice(
+    products_count = np.random.choice(
         [1, 2, 3, 4],
         size=rows_count,
         p=[0.35, 0.40, 0.18, 0.07]
     )
 
-    есть_кредитная_карта = np.random.choice(
+    has_credit_card = np.random.choice(
         [0, 1],
         size=rows_count,
         p=[0.30, 0.70]
     )
 
-    активный_клиент = np.random.choice(
+    is_active_client = np.random.choice(
         [0, 1],
         size=rows_count,
         p=[0.42, 0.58]
     )
 
-    примерная_зарплата = np.random.normal(loc=180000, scale=70000, size=rows_count)
-    примерная_зарплата = np.clip(примерная_зарплата, 50000, 500000).round(2)
+    estimated_salary = np.random.normal(loc=180000, scale=70000, size=rows_count)
+    estimated_salary = np.clip(estimated_salary, 50000, 500000).round(2)
 
-    количество_жалоб = np.random.poisson(lam=1.2, size=rows_count)
-    количество_жалоб = np.clip(количество_жалоб, 0, 8)
+    complaints_count = np.random.poisson(lam=1.2, size=rows_count)
+    complaints_count = np.clip(complaints_count, 0, 8)
 
-    обращения_в_поддержку = np.random.poisson(lam=2.0, size=rows_count)
-    обращения_в_поддержку = np.clip(обращения_в_поддержку, 0, 12)
+    support_calls = np.random.poisson(lam=2.0, size=rows_count)
+    support_calls = np.clip(support_calls, 0, 12)
 
-    использование_приложения_в_месяц = np.random.normal(loc=12, scale=7, size=rows_count).astype(int)
-    использование_приложения_в_месяц = np.clip(использование_приложения_в_месяц, 0, 30)
+    app_usage_per_month = np.random.normal(loc=12, scale=7, size=rows_count).astype(int)
+    app_usage_per_month = np.clip(app_usage_per_month, 0, 30)
 
-    # Создаём дополнительные числовые признаки.
-    # Они делают датасет более похожим на банковские данные.
-    сумма_кредитов = np.random.normal(loc=900000, scale=450000, size=rows_count)
-    сумма_кредитов = np.clip(сумма_кредитов, 0, 3000000).round(2)
+    loan_amount = np.random.normal(loc=900000, scale=450000, size=rows_count)
+    loan_amount = np.clip(loan_amount, 0, 3000000).round(2)
 
-    просрочки_по_кредитам = np.random.poisson(lam=0.4, size=rows_count)
-    просрочки_по_кредитам = np.clip(просрочки_по_кредитам, 0, 6)
+    overdue_payments = np.random.poisson(lam=0.4, size=rows_count)
+    overdue_payments = np.clip(overdue_payments, 0, 6)
 
-    средняя_оценка_сервиса = np.random.normal(loc=4.0, scale=0.8, size=rows_count)
-    средняя_оценка_сервиса = np.clip(средняя_оценка_сервиса, 1, 5).round(1)
+    service_rating = np.random.normal(loc=4.0, scale=0.8, size=rows_count)
+    service_rating = np.clip(service_rating, 1, 5).round(1)
 
-    # Рассчитываем скрытую вероятность оттока клиента.
-    # Логика:
-    # - много жалоб, обращений и просрочек повышают вероятность ухода;
-    # - активность, большой срок обслуживания, несколько продуктов и приложение снижают риск ухода;
-    # - высокая оценка сервиса снижает вероятность ухода;
-    # - новые клиенты уходят чаще, премиальные клиенты уходят реже.
+    # Формируем вероятность оттока.
+    # Жалобы, обращения и просрочки повышают риск ухода.
+    # Активность, срок обслуживания, продукты и приложение снижают риск ухода.
     churn_score = (
         -1.1
-        + 0.45 * количество_жалоб
-        + 0.18 * обращения_в_поддержку
-        + 0.28 * просрочки_по_кредитам
-        - 0.85 * активный_клиент
-        - 0.12 * срок_обслуживания_лет
-        - 0.25 * количество_продуктов
-        - 0.04 * использование_приложения_в_месяц
-        - 0.002 * (кредитный_рейтинг - 650)
-        + 0.015 * (возраст - 42)
-        - 0.35 * (средняя_оценка_сервиса - 3)
+        + 0.45 * complaints_count
+        + 0.18 * support_calls
+        + 0.28 * overdue_payments
+        - 0.85 * is_active_client
+        - 0.12 * tenure_years
+        - 0.25 * products_count
+        - 0.04 * app_usage_per_month
+        - 0.002 * (credit_score - 650)
+        + 0.015 * (age - 42)
+        - 0.35 * (service_rating - 3)
     )
 
-    # Учитываем тип клиента.
-    churn_score += np.where(тип_клиента == "Новый", 0.35, 0)
-    churn_score += np.where(тип_клиента == "Премиальный", -0.45, 0)
+    churn_score += np.where(client_type == "Новый", 0.35, 0)
+    churn_score += np.where(client_type == "Премиальный", -0.45, 0)
+    churn_score += np.where(service_channel == "Колл-центр", 0.25, 0)
+    churn_score += np.where(service_channel == "Мобильное приложение", -0.20, 0)
 
-    # Учитываем канал обслуживания.
-    churn_score += np.where(канал_обслуживания == "Колл-центр", 0.25, 0)
-    churn_score += np.where(канал_обслуживания == "Мобильное приложение", -0.20, 0)
+    churn_probability = 1 / (1 + np.exp(-churn_score))
 
-    вероятность_оттока = 1 / (1 + np.exp(-churn_score))
-
-    отток = np.random.binomial(
+    churn = np.random.binomial(
         n=1,
-        p=вероятность_оттока,
+        p=churn_probability,
         size=rows_count
     )
 
     df = pd.DataFrame({
-        "ID_клиента": id_клиента,
-        "Возраст": возраст,
-        "Пол": пол,
-        "Город": город,
-        "Банк": банк,
-        "Тип_клиента": тип_клиента,
-        "Канал_обслуживания": канал_обслуживания,
-        "Кредитный_рейтинг": кредитный_рейтинг,
-        "Срок_обслуживания_лет": срок_обслуживания_лет,
-        "Баланс": баланс,
-        "Количество_продуктов": количество_продуктов,
-        "Есть_кредитная_карта": есть_кредитная_карта,
-        "Активный_клиент": активный_клиент,
-        "Примерная_зарплата": примерная_зарплата,
-        "Количество_жалоб": количество_жалоб,
-        "Обращения_в_поддержку": обращения_в_поддержку,
-        "Использование_приложения_в_месяц": использование_приложения_в_месяц,
-        "Сумма_кредитов": сумма_кредитов,
-        "Просрочки_по_кредитам": просрочки_по_кредитам,
-        "Средняя_оценка_сервиса": средняя_оценка_сервиса,
-        "Отток": отток
+        "ID_клиента": customer_id,
+        "Возраст": age,
+        "Пол": gender,
+        "Город": city,
+        "Банк": bank,
+        "Тип_клиента": client_type,
+        "Канал_обслуживания": service_channel,
+        "Кредитный_рейтинг": credit_score,
+        "Срок_обслуживания_лет": tenure_years,
+        "Баланс": balance,
+        "Количество_продуктов": products_count,
+        "Есть_кредитная_карта": has_credit_card,
+        "Активный_клиент": is_active_client,
+        "Примерная_зарплата": estimated_salary,
+        "Количество_жалоб": complaints_count,
+        "Обращения_в_поддержку": support_calls,
+        "Использование_приложения_в_месяц": app_usage_per_month,
+        "Сумма_кредитов": loan_amount,
+        "Просрочки_по_кредитам": overdue_payments,
+        "Средняя_оценка_сервиса": service_rating,
+        "Отток": churn
     })
 
     return df
@@ -178,14 +167,14 @@ def main() -> None:
     print("Датасет успешно создан")
     print(f"Путь к файлу: {output_path}")
     print(f"Размер датасета: {df.shape[0]} строк, {df.shape[1]} колонок")
-    print()
-    print("Первые 5 строк:")
+
+    print("\nПервые 5 строк:")
     print(df.head())
-    print()
-    print("Распределение целевой переменной Отток:")
+
+    print("\nРаспределение целевой переменной Отток:")
     print(df["Отток"].value_counts())
-    print()
-    print("Доля классов:")
+
+    print("\nДоля классов:")
     print(df["Отток"].value_counts(normalize=True).round(3))
 
 
